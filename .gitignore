@@ -1,8 +1,4 @@
 # Project exclude paths
 /target/
-/.idea/.gitignore
-/.idea/codeStyles/codeStyleConfig.xml
-/.idea/compiler.xml
-/.idea/jarRepositories.xml
+/.idea/
 /spring-batch-com.muti.spring.batch.sample.iml
-/.idea/vcs.xml
