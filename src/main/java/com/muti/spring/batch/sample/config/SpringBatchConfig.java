@@ -44,20 +44,18 @@ public class SpringBatchConfig {
     @Bean
     public ItemReader<Transaction> itemReader() throws UnexpectedInputException {
 
-        FlatFileItemReader<Transaction> reader = new FlatFileItemReader<>();
-
-        DelimitedLineTokenizer tokenizer = new DelimitedLineTokenizer();
-
         String[] tokens = { "username", "userid", "transactiondate", "amount" };
 
+        DelimitedLineTokenizer tokenizer = new DelimitedLineTokenizer();
         tokenizer.setNames(tokens);
-
-        reader.setResource(inputCsv);
 
         DefaultLineMapper<Transaction> lineMapper = new DefaultLineMapper<>();
         lineMapper.setLineTokenizer(tokenizer);
         lineMapper.setFieldSetMapper(new RecordFieldSetMapper());
 
+        FlatFileItemReader<Transaction> reader = new FlatFileItemReader<>();
+        reader.setResource(inputCsv);
+        reader.setLinesToSkip(1);           // skip the first line as it contains csv headers
         reader.setLineMapper(lineMapper);
 
         return reader;
