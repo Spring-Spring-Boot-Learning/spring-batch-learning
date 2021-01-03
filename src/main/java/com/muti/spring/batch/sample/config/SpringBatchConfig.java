@@ -81,7 +81,7 @@ public class SpringBatchConfig {
     public Marshaller marshaller() {
 
         Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
-        marshaller.setClassesToBeBound(new Class[] { Transaction.class });
+        marshaller.setClassesToBeBound(Transaction.class);
 
         return marshaller;
     }

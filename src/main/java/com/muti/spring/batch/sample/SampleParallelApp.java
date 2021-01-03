@@ -1,16 +1,13 @@
 package com.muti.spring.batch.sample;
 
-import com.muti.spring.batch.sample.config.SpringBatchConfig;
-import com.muti.spring.batch.sample.config.SpringConfig;
 import com.muti.spring.batch.sample.parallel.config.SpringBatchParallelConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Single-Process, multi-threaded job execution.
