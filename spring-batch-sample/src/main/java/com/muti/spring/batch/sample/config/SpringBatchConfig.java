@@ -2,7 +2,11 @@ package com.muti.spring.batch.sample.config;
 
 import com.muti.spring.batch.sample.model.Transaction;
 import com.muti.spring.batch.sample.service.CustomItemProcessor;
+import com.muti.spring.batch.sample.service.CustomSkipPolicy;
 import com.muti.spring.batch.sample.service.RecordFieldSetMapper;
+import com.muti.spring.batch.sample.service.SkippingItemProcessor;
+import com.muti.spring.batch.sample.service.exception.MissingUsernameException;
+import com.muti.spring.batch.sample.service.exception.NegativeAmountException;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
@@ -23,6 +27,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.oxm.Marshaller;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 
+import java.text.ParseException;
+
 /**
  * @author Andrea Muti <muti.andrea@gmail.com>
  * @since 02/01/2021
@@ -38,11 +44,20 @@ public class SpringBatchConfig {
     @Value("input/record.csv")
     private Resource inputCsv;
 
+    @Value("input/recordWithInvalidData.csv")
+    private Resource invalidInputCsv;
+
     @Value("file:xml/output.xml")
     private Resource outputXml;
 
     @Bean
     public ItemReader<Transaction> itemReader() throws UnexpectedInputException {
+
+        return itemReader(inputCsv);
+    }
+
+    @Bean
+    public ItemReader<Transaction> itemReader(Resource resource) throws UnexpectedInputException {
 
         String[] tokens = { "username", "userid", "transactiondate", "amount" };
 
@@ -54,7 +69,7 @@ public class SpringBatchConfig {
         lineMapper.setFieldSetMapper(new RecordFieldSetMapper());
 
         FlatFileItemReader<Transaction> reader = new FlatFileItemReader<>();
-        reader.setResource(inputCsv);
+        reader.setResource(resource);
         reader.setLinesToSkip(1);           // skip the first line as it contains csv headers
         reader.setLineMapper(lineMapper);
 
@@ -88,7 +103,7 @@ public class SpringBatchConfig {
 
     @Bean
     protected Step step1(ItemReader<Transaction> reader,
-                         ItemProcessor<Transaction, Transaction> processor,
+                         @Qualifier("itemProcessor") ItemProcessor<Transaction, Transaction> processor,
                          ItemWriter<Transaction> writer) {
 
         return steps.get("step1")
@@ -103,5 +118,62 @@ public class SpringBatchConfig {
     public Job job(@Qualifier("step1") Step step1) {
 
         return jobs.get("firstBatchJob").start(step1).build();
+    }
+
+    // ----- all beans related to Skip Logic example ----
+
+    // 1. Skipping Job - using a Step that explicitly defines skipping logic
+
+    @Bean(name = "skippingBatchJob")
+    public Job skippingBatchJob(@Qualifier("skippingStep") Step skippingStep) {
+
+        return jobs.get("skippingBatchJob")
+                .start(skippingStep)
+                .build();
+    }
+
+    @Bean
+    public Step skippingStep(@Qualifier("skippingItemProcessor") ItemProcessor<Transaction, Transaction> processor,
+                             ItemWriter<Transaction> writer) {
+
+        return steps.get("skippingStep")
+                .<Transaction, Transaction>chunk(10)
+                .reader(itemReader(invalidInputCsv))
+                .processor(processor)
+                .writer(writer)
+                .faultTolerant()                        // questo abilita la Skip Logic
+                .skipLimit(2)                           // numero massimo di eccezioni che è consentito saltare
+                .skip(MissingUsernameException.class)   // eccezioni che sono consentite
+                .skip(NegativeAmountException.class)
+                .build();
+    }
+
+    // 2. Skip Policy Job - using a Step that relies on a custom Skipping Policy
+
+    @Bean(name = "skipPolicyBatchJob")
+    public Job skipPolicyBatchJob(@Qualifier("skipPolicyStep") Step skipPolicyStep) {
+
+        return jobs.get("skipPolicyBatchJob")
+                .start(skipPolicyStep)
+                .build();
+    }
+
+    @Bean
+    public Step skipPolicyStep(@Qualifier("skippingItemProcessor") ItemProcessor<Transaction, Transaction> processor,
+                               ItemWriter<Transaction> writer) {
+
+        return steps.get("skipPolicyStep")
+                .<Transaction, Transaction>chunk(10)
+                .reader(itemReader(invalidInputCsv))
+                .processor(processor)
+                .writer(writer)
+                .faultTolerant()
+                .skipPolicy(new CustomSkipPolicy())
+                .build();
+    }
+
+    @Bean
+    public ItemProcessor<Transaction, Transaction> skippingItemProcessor() {
+        return new SkippingItemProcessor();
     }
 }

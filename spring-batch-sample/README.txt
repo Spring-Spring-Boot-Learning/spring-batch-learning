@@ -21,3 +21,10 @@ robin, 2134, 2/02/2015, 23411
 
  - SampleApp:          Single-threaded, single process job execution.
  - SampleParallelApp:  Parallel Processing using a multi-threaded implementation: a single Job and Step partitioning.
+
+For testing the Skip Logic of Spring Batch Job, we created a file input/recordWithInvalidData containing some wrong lines
+in the input/record.csv file (username is missing, or the transaction_amount is negative)
+
+  - SampleSkippingApp:   starts two jobs implementing the skip logic
+        - the first one defines explicitly the skip rules in the step building
+        - the second one uses a custom step policy in the step building
