@@ -10,7 +10,7 @@
     <version>0.0.1-SNAPSHOT</version>
 
     <modules>
-        <module>spring-batch-sample-app</module>
+        <module>spring-batch-sample</module>
         <module>scheduled-spring-batch-sample</module>
     </modules>
 
