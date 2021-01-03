@@ -16,6 +16,9 @@ public class Transaction {
     private LocalDateTime transactionDate;
     private double amount;
 
+    private int age;
+    private String postCode;
+
     /* getters and setters for the attributes */
 
     public String getUsername() {
@@ -50,10 +53,19 @@ public class Transaction {
         this.amount = amount;
     }
 
+    public int getAge() { return age; }
+
+    public void setAge(int age) { this.age = age; }
+
+    public String getPostCode() { return this.postCode; }
+
+    public void setPostCode(String postCode) { this.postCode = postCode; }
+
     @Override
     public String toString() {
         return "Transaction [username=" + username + ", userId=" + userId
                 + ", transactionDate=" + transactionDate + ", amount=" + amount
+                + ", age=" + age + ", postCode=" + postCode
                 + "]";
     }
 }
