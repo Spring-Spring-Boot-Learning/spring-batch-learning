@@ -12,6 +12,7 @@
     <modules>
         <module>spring-batch-sample</module>
         <module>scheduled-spring-batch-sample</module>
+        <module>conditional-flow-batch-job</module>
     </modules>
 
     <properties>
